@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDoS Attack Animation</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #0a0a1a;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    .container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .title {
+      color: white;
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .animation-container {
+      width: 800px;
+      height: 500px;
+      position: relative;
+      background-color: #111130;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .server {
+      position: absolute;
+      right: 100px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 80px;
+      height: 160px;
+      background-color: #444;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    
+    .server-lights {
+      width: 70%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    
+    .server-light {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 3px;
+      background-color: #4CAF50;
+    }
+    
+    .firewall {
+      position: absolute;
+      right: 220px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 300px;
+      background-color: #FF5722;
+      border-radius: 3px;
+      z-index: 5;
+    }
+    
+    .client {
+      position: absolute;
+      width: 50px;
+      height: 40px;
+      background-color: #03A9F4;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    
+    .packet {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+    }
+    
+    .malicious-packet {
+      background-color: #F44336;
+    }
+    
+    .info-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      color: white;
+      background-color: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      max-width: 300px;
+    }
+    
+    .load-meter {
+      position: absolute;
+      top: 20px;
+      right: 100px;
+      width: 80px;
+      height: 15px;
+      background-color: #333;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .load-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #4CAF50;
+      transition: width 0.5s, background-color 0.5s;
+    }
+    
+    .load-label {
+      position: absolute;
+      top: 5px;
+      right: 190px;
+      color: white;
+      font-size: 12px;
+    }
+    
+    .status-text {
+      position: absolute;
+      top: 45px;
+      right: 100px;
+      color: white;
+      font-size: 12px;
+      width: 80px;
+      text-align: center;
+    }
+    
+    .botnet-container {
+      position: absolute;
+      left: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .botnet-title {
+      color: white;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    .botnet {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-gap: 10px;
+    }
+    
+    .bot {
+      width: 30px;
+      height: 30px;
+      background-color: #263238;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #F44336;
+      font-size: 10px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .stage-title {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    .btn:hover {
+      background-color: #0b7dda;
+    }
+    
+    .restart-btn {
+      background-color: #F44336;
+    }
+    
+    .restart-btn:hover {
+      background-color: #d32f2f;
+    }
+    
+    @keyframes serverOverload {
+      0% { transform: translateY(-50%) rotate(0); }
+      25% { transform: translateY(-50%) rotate(-1deg); }
+      50% { transform: translateY(-50%) rotate(0); }
+      75% { transform: translateY(-50%) rotate(1deg); }
+      100% { transform: translateY(-50%) rotate(0); }
+    }
+    
+    @keyframes serverDown {
+      0% { transform: translateY(-50%) rotate(0); }
+      100% { transform: translateY(-50%) rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">DDoS Attack Animation: From Attack to Server Failure</h1>
+    
+    <div class="animation-container">
+      <div class="stage-title">Stage 1: Normal Traffic</div>
+      
+      <div class="server">
+        <div class="server-lights">
+          <div class="server-light"></div>
+          <div class="server-light"></div>
+          <div class="server-light"></div>
+          <div class="server-light"></div>
+          <div class="server-light"></div>
+          <div class="server-light"></div>
+          <div class="server-light"></div>
+          <div class="server-light"></div>
+        </div>
+      </div>
+      
+      <div class="firewall"></div>
+      
+      <div class="botnet-container">
+        <div class="botnet-title">Botnet</div>
+        <div class="botnet">
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+          <div class="bot">Bot</div>
+        </div>
+      </div>
+      
+      <div class="load-label">Server Load:</div>
+      <div class="load-meter">
+        <div class="load-fill"></div>
+      </div>
+      
+      <div class="status-text">Normal</div>
+      
+      <div class="info-panel">
+        <p>Regular legitimate traffic is being processed by the server.</p>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <button class="btn play-btn">Play Animation</button>
+      <button class="btn restart-btn" disabled>Restart</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.querySelector('.animation-container');
+      const server = document.querySelector('.server');
+      const serverLights = document.querySelectorAll('.server-light');
+      const firewall = document.querySelector('.firewall');
+      const loadFill = document.querySelector('.load-fill');
+      const statusText = document.querySelector('.status-text');
+      const stageTitle = document.querySelector('.stage-title');
+      const infoPanel = document.querySelector('.info-panel');
+      const bots = document.querySelectorAll('.bot');
+      const playBtn = document.querySelector('.play-btn');
+      const restartBtn = document.querySelector('.restart-btn');
+      
+      let isPlaying = false;
+      let currentStage = 1;
+      let serverLoad = 0;
+      let normalPacketInterval;
+      let attackInterval;
+      let intensifiedAttackInterval;
+      
+      // Create 3 regular clients
+      const createClients = () => {
+        const clientPositions = [
+          { left: 150, top: 150 },
+          { left: 180, top: 250 },
+          { left: 210, top: 350 }
+        ];
+        
+        clientPositions.forEach((pos, index) => {
+          const client = document.createElement('div');
+          client.className = 'client';
+          client.textContent = 'User';
+          client.style.left = pos.left + 'px';
+          client.style.top = pos.top + 'px';
+          container.appendChild(client);
+        });
+      };
+      
+      // Create a packet animation
+      const createPacket = (fromX, fromY, isAttack = false, isBypassingFirewall = false) => {
+        const packet = document.createElement('div');
+        packet.className = isAttack ? 'packet malicious-packet' : 'packet';
+        packet.style.left = fromX + 'px';
+        packet.style.top = fromY + 'px';
+        container.appendChild(packet);
+        
+        // Determine destination (server position)
+        const serverRect = server.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const toX = serverRect.left - containerRect.left;
+        const toY = serverRect.top - containerRect.top + (serverRect.height / 2);
+        
+        // Animation duration
+        const duration = isAttack ? 500 + Math.random() * 500 : 2000;
+        
+        // Firewall check
+        let intercepted = false;
+        if (isAttack && !isBypassingFirewall && Math.random() > 0.3) {
+          intercepted = true;
+        }
+        
+        const firewallX = firewall.getBoundingClientRect().left - containerRect.left;
+        
+        // Animate the packet
+        const startTime = performance.now();
+        function animate(time) {
+          const elapsed = time - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          // Calculate current position
+          let currentX, currentY;
+          
+          if (intercepted && progress * (toX - fromX) + fromX >= firewallX) {
+            // Packet is intercepted by firewall
+            currentX = firewallX;
+            currentY = fromY + (toY - fromY) * (firewallX - fromX) / (toX - fromX);
+            packet.style.left = currentX + 'px';
+            packet.style.top = currentY + 'px';
+            
+            // Remove the packet after hitting firewall
+            setTimeout(() => {
+              packet.remove();
+            }, 100);
+          } else {
+            // Normal packet movement
+            currentX = fromX + (toX - fromX) * progress;
+            currentY = fromY + (toY - fromY) * progress;
+            packet.style.left = currentX + 'px';
+            packet.style.top = currentY + 'px';
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              // Increment server load when packet reaches destination
+              if (isAttack && !intercepted) {
+                incrementServerLoad(isBypassingFirewall ? 2 : 1);
+              }
+              
+              // Remove the packet
+              packet.remove();
+            }
+          }
+        }
+        
+        requestAnimationFrame(animate);
+      };
+      
+      // Increment server load
+      const incrementServerLoad = (amount = 1) => {
+        if (currentStage < 4) { // Don't increase load after server down
+          serverLoad = Math.min(serverLoad + amount, 100);
+          loadFill.style.width = serverLoad + '%';
+          
+          // Change color based on load
+          if (serverLoad < 50) {
+            loadFill.style.backgroundColor = '#4CAF50'; // Green
+            statusText.textContent = 'Normal';
+            statusText.style.color = '#4CAF50';
+          } else if (serverLoad < 80) {
+            loadFill.style.backgroundColor = '#FFC107'; // Yellow
+            statusText.textContent = 'Warning';
+            statusText.style.color = '#FFC107';
+          } else {
+            loadFill.style.backgroundColor = '#F44336'; // Red
+            statusText.textContent = 'Critical';
+            statusText.style.color = '#F44336';
+          }
+          
+          // Check for stage transition
+          checkStageTransition();
+        }
+      };
+      
+      // Simulate normal traffic
+      const startNormalTraffic = () => {
+        const clients = document.querySelectorAll('.client');
+        
+        normalPacketInterval = setInterval(() => {
+          const randomClient = clients[Math.floor(Math.random() * clients.length)];
+          const clientRect = randomClient.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          
+          const fromX = clientRect.left - containerRect.left + clientRect.width;
+          const fromY = clientRect.top - containerRect.top + (clientRect.height / 2);
+          
+          createPacket(fromX, fromY, false);
+          
+          // Slowly decrease load over time to simulate processing
+          if (serverLoad > 0 && Math.random() > 0.7) {
+            serverLoad -= 0.5;
+            loadFill.style.width = serverLoad + '%';
+          }
+        }, 1000);
+      };
+      
+      // Start the DDoS attack
+      const startAttack = () => {
+        // Activate the botnet
+        bots.forEach((bot, index) => {
+          setTimeout(() => {
+            bot.style.opacity = 1;
+          }, index * 100);
+        });
+        
+        // Start sending malicious packets
+        attackInterval = setInterval(() => {
+          const randomBot = bots[Math.floor(Math.random() * bots.length)];
+          const botRect = randomBot.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          
+          const fromX = botRect.left - containerRect.left + botRect.width;
+          const fromY = botRect.top - containerRect.top + (botRect.height / 2);
+          
+          createPacket(fromX, fromY, true);
+        }, 200);
+      };
+      
+      // Intensify the attack (firewall bypass)
+      const intensifyAttack = () => {
+        intensifiedAttackInterval = setInterval(() => {
+          const randomBot = bots[Math.floor(Math.random() * bots.length)];
+          const botRect = randomBot.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          
+          const fromX = botRect.left - containerRect.left + botRect.width;
+          const fromY = botRect.top - containerRect.top + (botRect.height / 2);
+          
+          // These packets bypass the firewall
+          createPacket(fromX, fromY, true, true);
+        }, 100);
+      };
+      
+      // Server overload animation
+      const animateServerOverload = () => {
+        server.style.animation = 'serverOverload 0.5s infinite';
+        
+        // Make some server lights blink
+        serverLights.forEach((light, index) => {
+          if (index % 2 === 0) {
+            setInterval(() => {
+              light.style.backgroundColor = Math.random() > 0.5 ? '#4CAF50' : '#F44336';
+            }, 300);
+          }
+        });
+      };
+      
+      // Server down animation
+      const serverDown = () => {
+        server.style.animation = 'serverDown 1s forwards';
+        
+        // Turn off all server lights
+        serverLights.forEach(light => {
+          light.style.backgroundColor = '#333';
+        });
+        
+        // Clear all intervals
+        clearInterval(normalPacketInterval);
+        clearInterval(attackInterval);
+        clearInterval(intensifiedAttackInterval);
+      };
+      
+      // Check for stage transitions
+      const checkStageTransition = () => {
+        if (currentStage === 1 && serverLoad >= 30) {
+          // Transition to Stage 2: Initial Attack
+          currentStage = 2;
+          stageTitle.textContent = 'Stage 2: DDoS Attack Begins';
+          infoPanel.innerHTML = '<p>The botnet has been activated and is starting to flood the server with malicious traffic. The firewall is blocking some of the traffic, but the server load is increasing.</p>';
+          startAttack();
+        } else if (currentStage === 2 && serverLoad >= 70) {
+          // Transition to Stage 3: Intensified Attack
+          currentStage = 3;
+          stageTitle.textContent = 'Stage 3: Firewall Penetration';
+          infoPanel.innerHTML = '<p>The attack intensifies, using techniques to bypass the firewall. Server resources are being depleted quickly, and it\'s struggling to handle legitimate requests.</p>';
+          animateServerOverload();
+          intensifyAttack();
+        } else if (currentStage === 3 && serverLoad >= 95) {
+          // Transition to Stage 4: Server Down
+          currentStage = 4;
+          stageTitle.textContent = 'Stage 4: Server Down';
+          infoPanel.innerHTML = '<p>The server has been overwhelmed by the DDoS attack and has crashed. All services are now unavailable to legitimate users.</p>';
+          statusText.textContent = 'OFFLINE';
+          statusText.style.color = '#F44336';
+          serverDown();
+        }
+      };
+      
+      // Start the animation
+      const startAnimation = () => {
+        if (!isPlaying) {
+          isPlaying = true;
+          playBtn.disabled = true;
+          restartBtn.disabled = false;
+          
+          // Create the clients
+          createClients();
+          
+          // Start normal traffic
+          startNormalTraffic();
+          
+          // Automatically progress through stages by adding some load
+          const autoProgress = setInterval(() => {
+            if (currentStage < 4) {
+              incrementServerLoad(0.5);
+            } else {
+              clearInterval(autoProgress);
+            }
+          }, 500);
+        }
+      };
+      
+      // Restart the animation
+      const restartAnimation = () => {
+        // Clear all intervals
+        clearInterval(normalPacketInterval);
+        clearInterval(attackInterval);
+        clearInterval(intensifiedAttackInterval);
+        
+        // Remove all clients and packets
+        document.querySelectorAll('.client, .packet').forEach(el => el.remove());
+        
+        // Reset server
+        server.style.animation = 'none';
+        serverLights.forEach(light => {
+          light.style.backgroundColor = '#4CAF50';
+        });
+        
+        // Reset bots
+        bots.forEach(bot => {
+          bot.style.opacity = 0;
+        });
+        
+        // Reset load and status
+        serverLoad = 0;
+        loadFill.style.width = '0%';
+        loadFill.style.backgroundColor = '#4CAF50';
+        statusText.textContent = 'Normal';
+        statusText.style.color = '#4CAF50';
+        
+        // Reset stage
+        currentStage = 1;
+        stageTitle.textContent = 'Stage 1: Normal Traffic';
+        infoPanel.innerHTML = '<p>Regular legitimate traffic is being processed by the server.</p>';
+        
+        // Reset buttons
+        isPlaying = false;
+        playBtn.disabled = false;
+        restartBtn.disabled = true;
+      };
+      
+      // Button event listeners
+      playBtn.addEventListener('click', startAnimation);
+      restartBtn.addEventListener('click', restartAnimation);
+    });
+  </script>
+</body>
+</html>
